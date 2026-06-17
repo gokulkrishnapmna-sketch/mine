@@ -241,8 +241,10 @@ create policy "comments insert" on comments for insert with check (author_id = a
 create policy "activity readable" on activity_events for select using (auth.role() = 'authenticated');
 create policy "activity insert" on activity_events for insert with check (auth.role() = 'authenticated');
 
--- Notifications: you only see your own.
+-- Notifications: you only see (and dismiss) your own; any authenticated user
+-- may create them (the app fans out alerts to teammates on its actions).
 create policy "notifications own" on notifications for select using (recipient_id = auth.uid());
+create policy "notifications insert" on notifications for insert with check (auth.role() = 'authenticated');
 create policy "notifications update own" on notifications for update using (recipient_id = auth.uid());
 
 -- ----------------------------------------------------------------------------

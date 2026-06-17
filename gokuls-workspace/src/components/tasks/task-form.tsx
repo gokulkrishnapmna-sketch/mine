@@ -138,7 +138,7 @@ export function TaskForm() {
     setValue("");
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitted(true);
     const validation = validateRequest(draft);
@@ -170,8 +170,8 @@ export function TaskForm() {
       createdAt: now,
       updatedAt: now,
     };
-    createTask(task);
-    router.push(`/tasks/${task.id}`);
+    const id = await createTask(task);
+    router.push(`/tasks/${id}`);
   }
 
   const validation = validateRequest(draft);
