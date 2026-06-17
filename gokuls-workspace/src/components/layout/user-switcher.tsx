@@ -1,18 +1,40 @@
 "use client";
 
 import { useState } from "react";
-import { Check, ChevronsUpDown, Shield } from "lucide-react";
+import { Check, ChevronsUpDown, LogOut, Shield } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { useStore } from "@/lib/store";
-import { cn } from "@/lib/utils";
 
 /**
- * Demo-only role switcher. In production this is replaced by the
- * Google SSO session (Supabase Auth) and the signed-in user.
+ * In LIVE mode this shows the signed-in Google user + a sign-out control.
+ * In DEMO mode it doubles as a role switcher so you can try both views.
  */
 export function UserSwitcher() {
-  const { users, currentUser, setCurrentUser } = useStore();
+  const { users, currentUser, setCurrentUser, mode } = useStore();
   const [open, setOpen] = useState(false);
+
+  if (mode === "live") {
+    return (
+      <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-2 py-1.5">
+        <Avatar name={currentUser.name} color={currentUser.avatarColor} size="sm" />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-xs font-medium">{currentUser.name}</p>
+          <p className="truncate text-[10px] capitalize text-muted-foreground">
+            {currentUser.role === "admin" ? "Designer · Admin" : currentUser.department ?? "Requester"}
+          </p>
+        </div>
+        <form action="/auth/signout" method="post">
+          <button
+            type="submit"
+            aria-label="Sign out"
+            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <LogOut className="size-3.5" />
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="relative">

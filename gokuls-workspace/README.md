@@ -13,6 +13,18 @@ Built to feel like **Notion + Linear + Trello** — minimal, fast, and intuitive
 
 ---
 
+## 🚀 Get it online
+
+**Try the hosted demo (no account, 1 click):**
+
+[![Deploy demo](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fgokulkrishnapmna-sketch%2Fmine%2Ftree%2Fmain%2Fgokuls-workspace&project-name=gokuls-workspace-demo)
+
+**Launch the real, team-invitable app (~10 min, one free Supabase account):**
+follow **[docs/GO_LIVE.md](docs/GO_LIVE.md)** — email sign-in, shared database,
+live sync. No Google setup, no Vercel settings to configure.
+
+---
+
 ## ✨ Features
 
 | Area | What you get |
@@ -46,16 +58,25 @@ Built to feel like **Notion + Linear + Trello** — minimal, fast, and intuitive
 
 - **Frontend:** Next.js 14 (App Router) · TypeScript · Tailwind CSS · ShadCN-style UI
 - **Drag & drop:** `@dnd-kit` · **Charts:** `recharts` · **Icons:** `lucide-react`
-- **Backend (production):** Supabase — PostgreSQL, Auth (**Google SSO**), Storage, Realtime
+- **Backend (production):** Supabase — PostgreSQL, Auth (**email magic-link**), Storage, Realtime
 - **Email:** Resend · **Deployment:** Vercel
 
-### Demo mode vs. production
-This repo ships in **demo mode**: a fully interactive client-side store
-(`src/lib/store.tsx`) seeded with realistic data and persisted to
-`localStorage` — no backend required. Everything (create, drag, comment,
-notify, reorder) works out of the box. The production data layer is provided
-as a drop-in: the Supabase schema (`supabase/schema.sql`), client factory
-(`src/lib/supabase.ts`), and API routes (`src/app/api/*`).
+### Demo mode vs. live mode
+The app auto-detects its mode from the environment:
+
+- **Demo mode** (no env vars) — a fully interactive client-side store
+  (`src/lib/store.tsx`) seeded with realistic data, persisted to `localStorage`.
+  No backend, no login. Everything works out of the box.
+- **Live mode** (Supabase env vars present) — a real team workspace:
+  **email magic-link** login (optionally restricted to your company domain), a
+  **shared PostgreSQL** database, Row Level Security, and **realtime** sync
+  across everyone's screens. The same UI, backed by Supabase.
+
+👉 **To stand up the real, team-invitable version, follow
+[`docs/GO_LIVE.md`](docs/GO_LIVE.md)** (~15 min: create a Supabase project, run
+the schema, set env vars). No code changes needed — the
+auth flow (`src/middleware.ts`, `src/app/login`, `src/app/auth/*`) and data
+layer (`src/lib/supabase/*`) are already built.
 
 ---
 
@@ -117,6 +138,7 @@ gokuls-workspace/
 
 ## 📚 Documentation
 
+- **[Go live (make it a real team app)](docs/GO_LIVE.md)** ⭐
 - [Architecture](docs/ARCHITECTURE.md)
 - [Database schema](docs/DATABASE.md)
 - [API structure](docs/API.md)
