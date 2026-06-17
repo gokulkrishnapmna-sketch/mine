@@ -1,131 +1,105 @@
-# Go live — turn the demo into a real team workspace
+# Launch the real app (the easy way)
 
-This guide takes you from the demo to a **real, multi-user app** with Google
-sign-in, a shared database, and live updates. Budget ~15–20 minutes.
+This turns the demo into a **real, multi-user app** — people sign in with their
+email, tasks are saved, and everyone sees the same board live.
 
-You'll create two free accounts (**Supabase** and **Google Cloud** for OAuth).
-Everything else — the auth flow, data layer, realtime — is already built; you
-just provide the keys.
-
-> **How the app decides the mode:** if the Supabase environment variables are
-> present, the app automatically switches to **LIVE mode** (login required,
-> shared Postgres, realtime). If they're absent, it stays in **demo mode**.
+You need **one free account: Supabase** (it stores the data and sends the
+sign-in emails). Hosting is a one-click button. Total time: ~10 minutes.
+**No Google setup, no Vercel settings to fiddle with.**
 
 ---
 
-## 1. Create the Supabase project (~3 min)
+## Want to see it hosted *right now* (no account)?
 
-1. Go to [supabase.com](https://supabase.com) → **New project**. Pick a name and
-   a strong database password. Choose the region closest to your team.
-2. When it's ready, open **Project Settings → API** and copy:
-   - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
-   - **anon public** key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - **service_role** key → `SUPABASE_SERVICE_ROLE_KEY` (keep secret)
+Deploy the **demo** (no login, sample data) in one click:
 
-## 2. Create the database schema (~2 min)
+[![Deploy demo](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fgokulkrishnapmna-sketch%2Fmine%2Ftree%2Fmain%2Fgokuls-workspace&project-name=gokuls-workspace-demo)
 
-1. In Supabase, open the **SQL Editor** → **New query**.
-2. Paste the entire contents of [`supabase/schema.sql`](../supabase/schema.sql)
-   and **Run**. This creates all tables, enums, triggers, Row Level Security
-   policies, and enables realtime.
-3. (Optional) paste [`supabase/seed.sql`](../supabase/seed.sql) and run it for a
-   few sample tasks. You can delete them later.
+Click it → "Continue with GitHub" → Deploy. You'll get a public URL in ~1 min.
+Good for sharing the look & feel. When you're ready for the real thing, do the 3
+steps below.
 
-## 3. Enable Google sign-in (~6 min)
+---
 
-**In Google Cloud Console** ([console.cloud.google.com](https://console.cloud.google.com)):
-1. Create (or pick) a project → **APIs & Services → OAuth consent screen**.
-   - User type: **Internal** if you use Google Workspace (best — only your org
-     can sign in), otherwise **External**.
-2. **APIs & Services → Credentials → Create Credentials → OAuth client ID**:
-   - Application type: **Web application**.
-   - **Authorized redirect URI**: copy this from Supabase →
-     **Authentication → Providers → Google** (it looks like
-     `https://<project-ref>.supabase.co/auth/v1/callback`).
-   - Save and copy the **Client ID** and **Client secret**.
+## The real app — 3 steps
 
-**In Supabase** → **Authentication → Providers → Google**:
-3. Enable it, paste the Client ID + secret, and **Save**.
-4. **Authentication → URL Configuration**:
-   - **Site URL**: your app URL (e.g. `https://your-app.vercel.app`).
-   - **Redirect URLs**: add `https://your-app.vercel.app/auth/callback`
-     (and `http://localhost:3000/auth/callback` for local dev).
+### Step 1 — Create the database (Supabase) · ~5 min
+1. Go to **[supabase.com](https://supabase.com)** → sign up (free) → **New project**.
+   Give it a name + database password, pick the nearest region, **Create**.
+2. Wait ~2 min for it to finish. Then open **SQL Editor** (left sidebar) →
+   **New query**.
+3. Open [`supabase/schema.sql`](../supabase/schema.sql) in this repo, copy
+   **everything**, paste it in, and click **Run**. (Creates all the tables,
+   security rules, and live-sync. You'll see "Success".)
+4. Open **Project Settings → API** and keep this tab open — you'll copy 3 values
+   in Step 3:
+   - **Project URL**
+   - **anon public** key
+   - **service_role** key
 
-## 4. Restrict access to your company (~1 min)
+> Email sign-in works out of the box — Supabase sends the links. (For higher
+> volume later, add your own SMTP under Authentication → Emails.)
 
-Set `ALLOWED_EMAIL_DOMAIN` to your company domain (e.g. `yourcompany.com`). The
-app rejects any Google account that isn't on that domain at sign-in. (If you set
-the OAuth consent screen to **Internal** in Workspace, that's a second layer.)
+### Step 2 — Deploy the app · ~2 min
+Click the button:
 
-## 5. Configure environment variables
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fgokulkrishnapmna-sketch%2Fmine%2Ftree%2Fmain%2Fgokuls-workspace&project-name=gokuls-workspace&env=NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY,SUPABASE_SERVICE_ROLE_KEY,NEXT_PUBLIC_ALLOWED_EMAIL_DOMAIN&envDescription=Paste%20your%203%20Supabase%20keys%20and%20your%20company%20email%20domain)
 
-Locally, copy `.env.example` → `.env.local` and fill in. On **Vercel** add the
-same under **Settings → Environment Variables**:
+It will ask you to connect GitHub, then show **4 boxes to fill in** (that's Step 3).
 
-```
-NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon key>
-SUPABASE_SERVICE_ROLE_KEY=<service role key>
-ALLOWED_EMAIL_DOMAIN=yourcompany.com
-NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
-```
+### Step 3 — Paste your keys · ~1 min
+In the Vercel deploy screen, fill the 4 boxes from your Supabase tab:
 
-> Reminder from the earlier deploy error: set the Vercel project's **Root
-> Directory** to `gokuls-workspace` so it builds the app (not the repo root).
+| Box | Paste this |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon public key |
+| `SUPABASE_SERVICE_ROLE_KEY` | service_role key |
+| `NEXT_PUBLIC_ALLOWED_EMAIL_DOMAIN` | your domain, e.g. `yourcompany.com` (or leave blank to allow any email) |
 
-Redeploy. The app is now live — visiting it redirects to **Sign in with Google**.
+Click **Deploy**. In ~1 minute you get your live URL, e.g.
+`https://gokuls-workspace.vercel.app`.
 
-## 6. Invite your team
+### One small thing after the first deploy
+Tell Supabase to trust your new URL so sign-in links work:
+- Supabase → **Authentication → URL Configuration**
+- **Site URL**: your Vercel URL
+- **Redirect URLs**: add `https://your-url.vercel.app/auth/callback`
+- Save. (Redeploy isn't needed.)
 
-There's no separate invite step — **anyone with a company Google account just
-visits the URL and signs in.** On first sign-in a `profiles` row is created
-automatically. Share the link in Slack/email and you're done.
+---
 
-## 7. Make Gokul an admin (~30 sec, one time)
+## Invite your team
+Just share the URL. Each person enters their email, gets a sign-in link, clicks
+it — done. Their account is created automatically on first sign-in.
 
-Everyone starts as a **requester**. Promote Gokul once so he gets the admin
-controls (change status/priority, reorder the queue, set completion dates,
-analytics). In the Supabase **SQL Editor**:
+## Make Gokul the admin (one time)
+Everyone starts as a requester. Give Gokul the admin powers (change status &
+priority, reorder the queue, set due dates, analytics). In Supabase → **SQL
+Editor**, run (use Gokul's real email):
 
 ```sql
 update profiles set role = 'admin' where email = 'gokul@yourcompany.com';
 ```
 
-Set each person's department too (shows on cards and analytics), e.g.:
+Optionally set people's departments (shows on cards + analytics):
 
 ```sql
 update profiles set department = 'Marketing' where email = 'aisha@yourcompany.com';
 ```
 
+That's it — you have a real, shared, live design-request workspace. 🎉
+
 ---
 
-## What's live now
+## If something's off
 
-- **Google SSO** — company-domain-restricted sign-in; per-user sessions.
-- **Shared database** — every task, comment, file reference, and activity event
-  is stored in Postgres and visible to the whole team (reads open, writes guarded
-  by RLS).
-- **Real task assignment & tracking** — status, priority, deadlines, and the
-  smart-queue order persist and sync.
-- **Realtime** — when Gokul moves a card or answers a question, everyone's board,
-  queue, and notification badge update live without a refresh.
-- **In-app notifications** — questions, status/priority changes, and completions.
-
-## Not included in v1 (easy to add later)
-
-- **Email notifications** — schema + the weekly-report cron are ready; add a
-  Resend key and wire `/api/reports/weekly` + a Postgres trigger or Edge
-  Function. See [`docs/API.md`](API.md).
-- **File uploads to Storage** — create a private `task-files` bucket and switch
-  the form's file handler to `supabase.storage.from('task-files').upload(...)`.
-  The `attachments` table already stores the metadata.
-
-## Troubleshooting
-
-| Symptom | Fix |
+| Problem | Fix |
 | --- | --- |
-| Stuck on login / "redirect_uri_mismatch" | The redirect URI in Google must exactly match the Supabase callback URL; the app URL must be in Supabase **Redirect URLs**. |
-| "That account isn't allowed" | The email domain ≠ `ALLOWED_EMAIL_DOMAIN`. Sign in with a company account or update the variable. |
-| Signed in but no admin controls | Run the `update profiles set role='admin'` query for that email, then refresh. |
-| Build fails on Vercel (Python error) | Set **Root Directory** = `gokuls-workspace`. |
-| Data doesn't sync live | Confirm `schema.sql` ran fully (it adds tables to the `supabase_realtime` publication). |
+| Sign-in link doesn't log me in | Add your Vercel URL to Supabase **Authentication → URL Configuration** (Site URL + Redirect URLs `…/auth/callback`). |
+| "That email isn't allowed" | The email domain ≠ `NEXT_PUBLIC_ALLOWED_EMAIL_DOMAIN`. Use a company email or clear that variable in Vercel → Settings → Environment Variables. |
+| Didn't get the email | Check spam; Supabase's built-in email is rate-limited — wait a minute and retry, or add SMTP in Supabase. |
+| No admin controls for Gokul | Run the `update profiles set role='admin'` query above, then refresh. |
+| App shows demo data / no login | The Supabase env vars are missing or misspelled in Vercel → Settings → Environment Variables. Re-check and redeploy. |
+
+Want me to walk you through any step live? Just ask.
