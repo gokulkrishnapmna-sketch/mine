@@ -1,0 +1,11 @@
+# silent feed version is a byte-identical copy of the master (film has no audio) — regenerate via render_all.sh
+out/crossdive-2026_silent.mp4
+
+# local render/build scratch
+node_modules
+scratch_frames/
+render.log
+.ffmpeg_path
+verify.mjs
+verify2.mjs
+dbg*.mjs

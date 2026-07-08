@@ -1,0 +1,536 @@
+<title>CrossDive 2026 — A Foresight Film</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+/* ─────────────────────────────  FONTS  ───────────────────────────── */
+@font-face{
+  font-family:'Anton';font-style:normal;font-weight:400;font-display:block;
+  src:url(data:font/woff2;base64,__ANTON_B64__) format('woff2');
+}
+@font-face{
+  /* Google Sans stand-in: Inter (variable, weights 400–500). */
+  font-family:'GSans';font-style:normal;font-weight:400 500;font-display:block;
+  src:url(data:font/woff2;base64,__INTER_B64__) format('woff2');
+}
+
+/* ─────────────────────────────  TOKENS  ──────────────────────────── */
+:root{
+  --bg:#0A0A0A; --orange:#FF5A1F; --ink:#FAFAFA; --grey:#8A8A8A; --stroke:#2A2A2A;
+  --safe-x:96px; --safe-t:240px; --safe-b:300px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;overflow:hidden}
+body{display:flex;align-items:center;justify-content:center}
+
+/* Fixed 1080×1920 canvas, scaled to fit the viewport. */
+#viewport{position:relative;width:1080px;height:1920px;transform-origin:center center}
+#stage{position:absolute;inset:0;background:var(--bg);overflow:hidden}
+
+/* Grain + vignette — always present, faint. */
+#grain{position:absolute;inset:-40px;pointer-events:none;opacity:.045;mix-blend-mode:screen;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size:200px 200px;z-index:60}
+#vignette{position:absolute;inset:0;pointer-events:none;z-index:59;
+  background:radial-gradient(120% 120% at 50% 42%, transparent 55%, rgba(0,0,0,.55) 100%)}
+#flash{position:absolute;inset:0;pointer-events:none;z-index:58;background:var(--orange);opacity:0}
+
+/* ─────────────────────────────  SCENES  ──────────────────────────── */
+.scene{position:absolute;inset:0;display:none;z-index:10}
+.scene.on{display:block}
+.safe{position:absolute;inset:var(--safe-t) var(--safe-x) var(--safe-b);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+
+/* Type primitives */
+.anton{font-family:'Anton';text-transform:uppercase;letter-spacing:-.01em;line-height:.95;color:var(--ink)}
+.gs{font-family:'GSans';color:var(--ink);font-weight:400}
+.o{color:var(--orange)}
+.grey{color:var(--grey)}
+
+.micro{font-family:'GSans';font-weight:500;font-size:20px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--orange);display:inline-flex;align-items:center;gap:14px}
+.micro .dash{width:24px;height:2px;background:var(--orange);display:inline-block}
+
+/* word / letter spans used by the reveal engine */
+.w,.l{display:inline-block;will-change:transform,opacity}
+.wrapword{white-space:pre-wrap}
+
+/* Pills & cards */
+.card{border:1px solid var(--stroke);border-radius:12px;background:rgba(255,255,255,.012)}
+
+/* Scene 1 corner brackets */
+.bracket{position:absolute;width:34px;height:34px;border:2px solid var(--orange);opacity:0}
+.bracket.tl{border-right:none;border-bottom:none}
+.bracket.tr{border-left:none;border-bottom:none}
+.bracket.bl{border-right:none;border-top:none}
+.bracket.br{border-left:none;border-top:none}
+
+/* Captions (subtitled build) */
+#captions{position:absolute;left:var(--safe-x);right:var(--safe-x);bottom:200px;z-index:57;
+  text-align:center;font-family:'GSans';font-weight:500;font-size:26px;line-height:1.35;
+  color:var(--ink);text-shadow:0 2px 10px rgba(0,0,0,.6);opacity:0;display:none}
+body.cc #captions{display:block}
+
+/* Transport (screen only — hidden during capture) */
+#hud{position:fixed;left:0;right:0;bottom:0;z-index:200;display:flex;gap:12px;align-items:center;
+  padding:10px 16px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);
+  font-family:ui-monospace,monospace;font-size:12px;color:#bbb}
+#hud.hide{display:none}
+#scrub{flex:1;accent-color:var(--orange)}
+#hud button{background:#1a1a1a;color:#eee;border:1px solid #333;border-radius:6px;padding:6px 10px;cursor:pointer;font:inherit}
+#tlabel{min-width:96px}
+</style>
+
+<div id="viewport">
+  <div id="stage">
+    <div id="grain"></div>
+    <div id="vignette"></div>
+    <div id="flash"></div>
+    <!-- SCENE 1 · Cold open -->
+    <section class="scene" id="s1">
+      <div class="micro" id="s1-label" style="position:absolute;top:150px;left:0;right:0;justify-content:center"><span class="dash"></span>TURIAN LABS · A FORESIGHT FILM</div>
+      <div class="safe">
+        <div id="s1-intro" style="display:flex;flex-direction:column;gap:26px">
+          <div class="gs" id="s1-l1" style="font-size:44px;line-height:1.25">The world isn't just changing.</div>
+          <div class="gs" id="s1-l2" style="font-size:44px;line-height:1.25">It's changing at the <span class="o">edges.</span></div>
+        </div>
+        <div id="s1-hero" style="position:relative;display:none">
+          <div class="anton" id="s1-head" style="font-size:150px">EXTREMES ARE<br>THE NEW NORMAL</div>
+          <span class="bracket tl"></span><span class="bracket tr"></span>
+          <span class="bracket bl"></span><span class="bracket br"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCENE 2 · The four pressures -->
+    <section class="scene" id="s2">
+      <div class="safe">
+        <div class="micro" id="s2-label" style="position:absolute;top:0;left:0;right:0;justify-content:center"><span class="dash"></span><span id="s2-labeltxt">PRESSURE 01</span></div>
+        <svg id="s2-glyph" width="360" height="300" viewBox="0 0 360 300" fill="none"
+             style="margin-bottom:70px" stroke="var(--ink)" stroke-width="3"
+             stroke-linecap="round" stroke-linejoin="round"></svg>
+        <div class="anton" id="s2-stmt" style="font-size:76px"></div>
+      </div>
+    </section>
+
+    <!-- SCENE 3 · The pivot -->
+    <section class="scene" id="s3">
+      <div class="safe">
+        <div class="anton" id="s3-q" style="font-size:88px">HOW DO WE PLAN<br>FOR A DECADE<br>LIKE THIS?</div>
+        <div style="position:relative;margin-top:70px">
+          <div class="gs" id="s3-not" style="font-weight:500;font-size:42px;letter-spacing:.02em;text-transform:uppercase">NOT BY <span id="s3-pred" style="position:relative">PREDICTING<span id="s3-strike" style="position:absolute;left:-4px;top:52%;height:4px;width:0;background:var(--orange)"></span></span>.</div>
+          <div class="anton o" id="s3-stress" style="font-size:92px;display:none;position:absolute;left:50%;top:-6px;transform:translateX(-50%);white-space:nowrap">BY STRESS-TESTING IT.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCENE 4 · Foresight -->
+    <section class="scene" id="s4">
+      <svg id="s4-grid" width="1080" height="1920" style="position:absolute;inset:0;opacity:.0" stroke="var(--stroke)" stroke-width="1"></svg>
+      <div class="safe">
+        <div class="anton" id="s4-head" style="font-size:150px">FORESIGHT IS<br>THE NEW <span class="o">STRATEGY</span></div>
+      </div>
+    </section>
+
+    <!-- SCENE 5 · Brand reveal -->
+    <section class="scene" id="s5">
+      <div class="safe">
+        <div class="anton" id="s5-mark" style="font-size:150px;letter-spacing:-.02em"></div>
+        <div id="s5-div" style="height:1px;width:0;background:var(--orange);margin:40px 0 34px"></div>
+        <div class="gs grey" id="s5-sub" style="font-weight:500;font-size:24px;letter-spacing:.10em;text-transform:uppercase;opacity:0">Annual Foresight Summit · 2026</div>
+      </div>
+    </section>
+
+    <!-- SCENE 6 · The four themes -->
+    <section class="scene" id="s6">
+      <div class="safe" style="justify-content:center">
+        <div id="s6-stack" style="display:flex;flex-direction:column;gap:26px;width:100%"></div>
+      </div>
+    </section>
+
+    <!-- SCENE 7 · The format -->
+    <section class="scene" id="s7">
+      <div class="safe">
+        <div class="anton" id="s7-a" style="font-size:170px;display:none">TWO DAYS.</div>
+        <div class="anton" id="s7-b" style="font-size:170px;display:none">ONE ROOM.</div>
+        <div class="anton" id="s7-c" style="font-size:96px;display:none;line-height:1.02">SIGNALS.<br>SHIFTS.<br><span class="o">STRATEGIC CHOICES.</span></div>
+      </div>
+    </section>
+
+    <!-- SCENE 8 · Venue & date -->
+    <section class="scene" id="s8">
+      <div class="safe">
+        <div id="s8-block" style="display:flex;flex-direction:column;align-items:center;gap:40px">
+          <div class="micro"><span class="dash"></span>TURIAN LABS · ANNUAL SUMMIT</div>
+          <div class="anton" style="font-size:74px">PUNE<br>INTERNATIONAL<br>CENTRE</div>
+          <div class="gs" style="font-weight:500;font-size:34px;letter-spacing:.06em;display:flex;align-items:center;gap:20px">
+            <span class="o" style="font-size:22px">●</span>22–23 OCTOBER 2026<span class="o" style="font-size:22px">●</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCENE 9 · CTA + end frame -->
+    <section class="scene" id="s9">
+      <div class="safe" style="justify-content:center;gap:56px">
+        <div class="anton" id="s9-mark" style="font-size:78px;letter-spacing:-.02em"></div>
+        <div class="card" id="s9-card" style="width:100%;padding:44px 40px;display:flex;flex-direction:column;align-items:center;gap:18px">
+          <div class="micro"><span class="dash"></span>EARLY BIRD PASS</div>
+          <div style="display:flex;align-items:baseline;gap:18px">
+            <div class="anton" style="font-size:118px">₹9,000</div>
+            <div class="gs grey" style="font-size:26px;letter-spacing:.04em">INCL. GST</div>
+          </div>
+        </div>
+        <button id="s9-btn" class="anton" style="border:none;cursor:default;background:var(--orange);color:#fff;
+          font-size:44px;letter-spacing:.01em;padding:30px 56px;border-radius:12px;width:100%">REGISTER NOW →</button>
+        <div class="gs o" id="s9-url" style="font-weight:500;font-size:34px;letter-spacing:.02em">crossdive.in</div>
+        <div class="gs grey" id="s9-fine" style="font-size:22px;letter-spacing:.06em;text-transform:uppercase;position:absolute;bottom:-4px">Early bird open until 31 July 2026</div>
+      </div>
+    </section>
+
+    <div id="captions"></div>
+  </div>
+</div>
+
+<div id="hud">
+  <button id="pp">❚❚</button>
+  <input id="scrub" type="range" min="0" max="1000" value="0">
+  <span id="tlabel">0.00 / 0.00</span>
+  <button id="cc">CC</button>
+</div>
+
+<script>
+"use strict";
+/* ═══════════════════════════  ENGINE  ═══════════════════════════════ */
+const Q = new URLSearchParams(location.search);
+const CUT = Q.get('cut') === '15';           // 15s retargeting cutdown
+if (Q.get('captions') === '1') document.body.classList.add('cc');
+if (Q.has('hud') && Q.get('hud') === '0') document.getElementById('hud').classList.add('hide');
+
+const $ = s => document.querySelector(s);
+const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
+const lerp = (a,b,p) => a + (b-a)*p;
+
+// Cubic-bezier easing solver (Newton–Raphson), matches CSS timing functions.
+function bezier(x1,y1,x2,y2){
+  const A=(a,b)=>1-3*b+3*a, B=(a,b)=>3*b-6*a, C=a=>3*a;
+  const cx=t=>((A(x1,x2)*t+B(x1,x2))*t+C(x1))*t;
+  const cy=t=>((A(y1,y2)*t+B(y1,y2))*t+C(y1))*t;
+  const dx=t=>(3*A(x1,x2)*t+2*B(x1,x2))*t+C(x1);
+  return x=>{ if(x<=0)return 0; if(x>=1)return 1; let t=x;
+    for(let i=0;i<6;i++){const e=cx(t)-x;const d=dx(t);if(Math.abs(e)<1e-4)break;if(Math.abs(d)<1e-6)break;t-=e/d;}
+    return cy(t); };
+}
+const quartOut = bezier(0.22,1,0.36,1);   // signature easing
+const easeOut  = bezier(0.16,1,0.3,1);
+
+// progress of a sub-segment: 0 before `start`, 1 after start+dur
+function seg(t,start,dur,ease){ const p=clamp01((t-start)/dur); return ease?ease(p):p; }
+
+// helpers to split text into animatable spans (idempotent)
+function splitWords(el){
+  const existing=[...el.querySelectorAll('.w')];
+  if(existing.length) return existing;              // respect pre-coloured word spans / idempotent
+  const kids=[...el.childNodes]; el.innerHTML=''; const out=[];
+  for(const node of kids){
+    if(node.nodeType===3){                          // text node → word spans
+      for(const tok of node.textContent.split(/(\s+)/)){
+        if(tok==='') continue;
+        if(/^\s+$/.test(tok)){ el.appendChild(document.createTextNode(tok)); continue; }
+        const s=document.createElement('span'); s.className='w'; s.textContent=tok; el.appendChild(s); out.push(s);
+      }
+    }else{ el.appendChild(node); }                   // preserve <br>, etc.
+  }
+  return out;
+}
+function letters(el){
+  if(el.dataset.split) return [...el.querySelectorAll('.l')];
+  const html=el.innerHTML; const frag=document.createDocumentFragment();
+  // walk child nodes preserving element wrappers (for coloured spans)
+  const wrap=node=>{
+    if(node.nodeType===3){
+      for(const ch of node.textContent){
+        const s=document.createElement('span'); s.className='l'; s.textContent=ch;
+        if(ch===' ') s.style.width='.28em'; frag.appendChild(s);
+      }
+    }else{
+      const clone=node.cloneNode(false);
+      for(const ch of node.textContent){
+        const s=document.createElement('span'); s.className='l'; s.textContent=ch; clone.appendChild(s);
+      }
+      frag.appendChild(clone);
+    }
+  };
+  el.childNodes.forEach(wrap); el.innerHTML=''; el.appendChild(frag);
+  el.dataset.split='1';
+  return [...el.querySelectorAll('.l')];
+}
+
+/* reveal helpers ---------------------------------------------------- */
+function fadeRise(el,p,rise=32){ el.style.opacity=p; el.style.transform=`translateY(${(1-p)*rise}px)`; }
+function staggerWords(el,t,start,step,dur,rise=28){
+  splitWords(el).forEach((w,i)=>fadeRise(w, seg(t,start+i*step,dur,quartOut), rise));
+}
+// clip reveal. dir 'up' = content appears from bottom rising up; 'down' = wipes downward.
+function clipReveal(el,p,dir='up'){
+  const e=quartOut(clamp01(p)); const hidden=(1-e)*100;
+  el.style.clipPath = dir==='up' ? `inset(${hidden}% 0 0 0)` : `inset(0 0 ${hidden}% 0)`;
+  el.style.opacity = p>0 ? 1 : 0;
+}
+function show(el,v){ el.style.display = v?'':'none'; }
+
+/* ═══════════════════════════  SCENE SETUP  ═════════════════════════ */
+// One-time DOM construction that the per-frame render() then animates.
+
+// S2 glyph path sets (abstract, stroke-drawn)
+const S2 = [
+  {label:'PRESSURE 01', stmt:['TECH',' > ','INSTITUTIONS'],
+   paths:['M40 250 L320 250','M40 250 L200 60','M40 250 L300 130','M40 250 L150 40']},      // diverging lines
+  {label:'PRESSURE 02', stmt:['LIFESPANS',' > ','SYSTEMS'],
+   paths:['M40 240 C 140 240 220 200 320 60']},                                              // extending arc
+  {label:'PRESSURE 03', stmt:['CITIES',' > ','PLANS'],
+   paths:['M70 260 L70 200','M150 260 L150 140','M230 260 L230 90','M310 260 L310 40']},     // rising bars
+  {label:'PRESSURE 04', stmt:['AI',' > ','JUDGEMENT'],
+   paths:['M40 150 L170 150','M170 150 L300 60','M170 150 L300 150','M170 150 L300 240']},   // branching node
+];
+// S4 ambient grid
+(function(){
+  const g=$('#s4-grid'); let d='';
+  for(let x=0;x<=1080;x+=120) d+=`<line x1="${x}" y1="0" x2="${x}" y2="1920"/>`;
+  for(let y=0;y<=1920;y+=120) d+=`<line x1="0" y1="${y}" x2="1080" y2="${y}"/>`;
+  g.innerHTML=d;
+})();
+
+// S5 / S9 wordmark builder: CROSS (ink) + DIVE (orange), per-letter spans
+function buildMark(el){
+  el.innerHTML='';
+  const mk=(txt,cls)=>{ for(const ch of txt){const s=document.createElement('span');s.className='l';s.textContent=ch;if(cls)s.classList.add(cls);el.appendChild(s);} };
+  mk('CROSS'); mk('DIVE','o');
+  return [...el.querySelectorAll('.l')];
+}
+const s5marks = buildMark($('#s5-mark'));
+const s9marks = buildMark($('#s9-mark'));
+
+// S6 theme cards
+const THEMES = [
+  {n:'01', title:['DEFRAGMENTATION',' OF THE WORLD'], hi:0, cap:'Realignment across geopolitics, trade and technology.'},
+  {n:'02', title:['AGELESS',' LIVING'], hi:0, cap:'Longer lives, redesigned systems.'},
+  {n:'03', title:['BEYOND ','INTELLIGENCE'], hi:1, cap:'When machines think, what remains human.'},
+  {n:'04', title:['EXPANDING ','ASPIRATIONS'], hi:1, cap:'A billion new ambitions, arriving at once.'},
+];
+const s6cards = THEMES.map(th=>{
+  const c=document.createElement('div'); c.className='card';
+  c.style.cssText='padding:30px 34px;display:flex;flex-direction:column;gap:14px;text-align:left;width:100%';
+  const t=th.title.map((seg,i)=>`<span${i===th.hi?' class="o"':''}>${seg}</span>`).join('');
+  c.innerHTML=`<div class="micro"><span class="dash"></span>THEME ${th.n}</div>
+    <div class="anton" style="font-size:56px;line-height:.98">${t}</div>
+    <div class="gs grey" style="font-size:26px;line-height:1.3;letter-spacing:.01em">${th.cap}</div>`;
+  $('#s6-stack').appendChild(c); return c;
+});
+
+/* ═══════════════════════════  CAPTIONS  ════════════════════════════ */
+// [startSec, endSec, text] on the MASTER timeline
+const CAPTIONS = [
+  [0.4,3.4,"The world isn't just changing. It's changing at the edges."],
+  [3.6,5.0,"Extremes are the new normal."],
+  [5.0,7.2,"Technology is outpacing institutions."],
+  [7.3,9.4,"Lifespans are stretching past the systems built to support them."],
+  [9.6,11.6,"Cities are absorbing millions faster than they can be planned."],
+  [11.8,14.0,"And AI is rewriting what human judgement even means."],
+  [14.0,16.4,"So how do we plan for a decade like this?"],
+  [16.5,19.0,"Not by predicting the future. By stress-testing it."],
+  [19.0,24.0,"Foresight has become a national capability. In India, a series of moments — until now."],
+  [24.2,29.0,"Introducing CrossDive 2026. India's annual foresight summit."],
+  [29.0,40.0,"Four themes shaping the decade ahead."],
+  [40.0,45.0,"Two days. One room. The signals, shifts, and strategic choices ahead."],
+  [45.0,49.0,"Pune International Centre. 22–23 October 2026."],
+  [49.0,54.0,"CrossDive 2026. Early bird registrations are open at crossdive.in."],
+];
+function renderCaptions(t){
+  const el=$('#captions'); let txt='',op=0;
+  for(const [a,b,s] of CAPTIONS){ if(t>=a&&t<b){ txt=s; op=clamp01((t-a)/.25)*clamp01((b-t)/.25); break; } }
+  if(el.textContent!==txt) el.textContent=txt; el.style.opacity=op;
+}
+
+/* ═══════════════════════════  SCENE RENDERERS  ═════════════════════ */
+// Each takes local time `lt` within its window.
+function rS1(lt){
+  fadeRise($('#s1-label'), seg(lt,0.4,0.5,quartOut), 16);
+  const hero = lt>=3.5;
+  show($('#s1-intro'), !hero); show($('#s1-hero'), hero);
+  if(!hero){
+    const l2=splitWords($('#s1-l2')); l2[l2.length-1].classList.add('o'); // "edges." stays orange
+    staggerWords($('#s1-l1'), lt, 0.9, 0.09, 0.5);
+    staggerWords($('#s1-l2'), lt, 2.15, 0.09, 0.5);
+  }else{
+    const h=lt-3.5;
+    clipReveal($('#s1-head'), seg(h,0,0.35,null), 'down');
+    // corner brackets one frame (~0.05s) after type lands
+    const bo=clamp01((h-0.42)/0.25);
+    const off=(1-quartOut(bo))*14;
+    document.querySelectorAll('#s1-hero .bracket').forEach(b=>{
+      b.style.opacity=bo;
+      const sx=b.classList.contains('tr')||b.classList.contains('br')?1:-1;
+      const sy=b.classList.contains('bl')||b.classList.contains('br')?1:-1;
+      b.style.transform=`translate(${sx*off}px,${sy*off}px)`;
+    });
+    positionBrackets();
+  }
+}
+function positionBrackets(){
+  const head=$('#s1-head'), host=$('#s1-hero');
+  const hb=head.getBoundingClientRect(), pb=host.getBoundingClientRect();
+  const pad=26, sc=1/scale;
+  const L=(hb.left-pb.left)*sc-pad, T=(hb.top-pb.top)*sc-pad;
+  const R=(pb.right-hb.right)*sc-pad, B=(pb.bottom-hb.bottom)*sc-pad;
+  const set=(el,p)=>Object.assign(el.style,p);
+  set(host.querySelector('.tl'),{left:L+'px',top:T+'px',right:'',bottom:''});
+  set(host.querySelector('.tr'),{right:R+'px',top:T+'px',left:'',bottom:''});
+  set(host.querySelector('.bl'),{left:L+'px',bottom:B+'px',right:'',top:''});
+  set(host.querySelector('.br'),{right:R+'px',bottom:B+'px',left:'',top:''});
+}
+
+let s2card=-1;
+function rS2(lt){
+  const dur=2.25, idx=Math.min(3, Math.floor(lt/dur)), l=lt-idx*dur;
+  if(idx!==s2card){ // (re)configure card
+    s2card=idx; const c=S2[idx];
+    $('#s2-labeltxt').textContent=c.label;
+    const svg=$('#s2-glyph'); svg.innerHTML=c.paths.map(d=>`<path d="${d}"/>`).join('');
+    $('#s2-stmt').innerHTML = c.stmt.map((p,i)=>`<span class="w" style="${i===1?'color:var(--orange);margin:0 .12em':''}">${p.trim()}</span>`).join('');
+  }
+  fadeRise($('#s2-label'), seg(l,0.1,0.4,quartOut),12);
+  // stroke-draw glyph over 600ms
+  const gp=seg(l,0.3,0.6,easeOut);
+  $('#s2-glyph').querySelectorAll('path').forEach(p=>{
+    const len=p.getTotalLength(); p.style.strokeDasharray=len;
+    p.style.strokeDashoffset=len*(1-gp); p.style.opacity=l>0.3?1:0;
+  });
+  staggerWords($('#s2-stmt'), l, 0.75, 0.06, 0.45, 22);
+}
+
+function rS3(lt){
+  splitWords($('#s3-q')).forEach((w,i)=>fadeRise(w, seg(lt, 0.0+i*0.05, 0.5, quartOut), 24));
+  fadeRise($('#s3-not'), seg(lt,1.0,0.4,quartOut),18);
+  const strike=$('#s3-strike'); const sp=seg(lt,1.6,0.25,easeOut);
+  strike.style.width=(sp*100)+'%';
+  const swap = lt>=2.2;
+  show($('#s3-not'), !swap); show($('#s3-stress'), swap);
+  if(swap){ const s=lt-2.2; const p=seg(s,0,0.45,quartOut);
+    $('#s3-stress').style.opacity=p; $('#s3-stress').style.transform=`translateX(-50%) translateY(${(1-p)*20}px)`; }
+}
+
+function rS4(lt){
+  // ambient grid pulse — very restrained
+  $('#s4-grid').style.opacity = (0.05 + 0.03*Math.sin(lt*1.1)) * clamp01(lt/0.6);
+  clipReveal($('#s4-head'), seg(lt,0.3,0.5,null), 'up');
+}
+
+function rS5(lt){
+  // hard cut to black, single-frame silence, then wordmark
+  s5marks.forEach((s,i)=>{ const p=seg(lt, 0.2+i*0.04, 0.4, quartOut);
+    s.style.opacity=p; s.style.transform=`scale(${lerp(0.96,1,p)})`; });
+  $('#s5-div').style.width = seg(lt,0.9,0.4,quartOut)*Math.min(560, 560) + 'px';
+  fadeRise($('#s5-sub'), seg(lt,1.3,0.5,quartOut),14);
+}
+
+let s6built=false;
+function rS6(lt){
+  s6cards.forEach((c,i)=>{
+    const p=seg(lt, 0.8+i*1.05, 0.6, quartOut);   // one by one, VO names each
+    c.style.opacity=p; c.style.transform=`translateY(${(1-p)*40}px)`;
+  });
+}
+
+function rS7(lt){
+  const A=lt<1.6, B=lt>=1.6&&lt<3.2, C=lt>=3.2;
+  show($('#s7-a'),A); show($('#s7-b'),B); show($('#s7-c'),C);
+  if(A){ const p=seg(lt,0,0.35,quartOut); const e=$('#s7-a'); e.style.opacity=p; e.style.transform=`translateY(${(1-p)*24}px)`; }
+  else if(B){ const p=seg(lt-1.6,0,0.35,quartOut); const e=$('#s7-b'); e.style.opacity=p; e.style.transform=`translateY(${(1-p)*24}px)`; }
+  else { clipReveal($('#s7-c'), seg(lt-3.2,0,0.4,null),'up'); }
+}
+
+function rS8(lt){
+  const p=seg(lt,0.1,0.4,quartOut);
+  const b=$('#s8-block'); b.style.opacity=p; b.style.transform=`translateY(${(1-p)*20}px)`;
+}
+
+function rS9(lt){
+  const items=[['#s9-mark',0],['#s9-card',1],['#s9-btn',2],['#s9-url',3],['#s9-fine',4]];
+  items.forEach(([sel,i])=>{ const p=seg(lt, 0.2+i*0.15, 0.5, quartOut);
+    const e=$(sel); e.style.opacity=p; e.style.transform=`translateY(${(1-p)*26}px)`; });
+  // single button pulse once it lands
+  const bt=$('#s9-btn'); const bp=lt-1.15;
+  let sc=1; if(bp>0&&bp<0.35){ const k=bp/0.35; sc=1+0.02*Math.sin(k*Math.PI); }
+  bt.style.transform=`translateY(${(1-seg(lt,0.5,0.5,quartOut))*26}px) scale(${sc})`;
+}
+
+/* ═══════════════════════════  TIMELINE  ════════════════════════════ */
+// [id, start, end, renderer]
+const MASTER = [
+  ['s1',0,5,rS1], ['s2',5,14,rS2], ['s3',14,19,rS3], ['s4',19,24,rS4],
+  ['s5',24,29,rS5], ['s6',29,40,rS6], ['s7',40,45,rS7], ['s8',45,49,rS8], ['s9',49,54,rS9],
+];
+// 15s retargeting cutdown: brand → theme titles → CTA
+const CUTDOWN = [
+  ['s5',0,4,rS5], ['s6',4,10,rS6], ['s9',10,15,rS9],
+];
+const TL = CUT ? CUTDOWN : MASTER;
+const DURATION = TL[TL.length-1][2];
+
+let active=null;
+function render(t){
+  let cur=null;
+  for(const [id,a,b,fn] of TL){
+    const on = t>=a && t<b || (t>=DURATION && b===DURATION);
+    const el=document.getElementById(id);
+    if(on){ el.classList.add('on'); cur=[id,a,fn]; } else el.classList.remove('on');
+  }
+  if(cur){ const [id,a,fn]=cur; fn(t-a); active=id; }
+  // one-shot orange transition flashes (into brand reveal & themes block)
+  const flashes = CUT ? [4,10] : [14,29];   // scene-2 card cuts also flash below
+  let fo=0;
+  for(const f of flashes){ const d=t-f; if(d>=0&&d<0.05) fo=Math.max(fo,0.3*(1-d/0.05)); }
+  if(!CUT){ // per-card flashes in scene 2
+    for(const c of [7.25,9.5,11.75]){ const d=t-c; if(d>=0&&d<0.033) fo=Math.max(fo,0.3); }
+  }
+  $('#flash').style.opacity=fo;
+  // grain drift
+  $('#grain').style.backgroundPosition=`${(t*37)%200}px ${(t*29)%200}px`;
+  renderCaptions(CUT?0:t);
+}
+
+/* ═══════════════════════════  PLAYBACK  ════════════════════════════ */
+let scale=1;
+function fit(){
+  const vw=innerWidth, vh=innerHeight;
+  scale=Math.min(vw/1080, vh/1920);
+  $('#viewport').style.transform=`scale(${scale})`;
+}
+addEventListener('resize',fit); fit();
+
+let t=0, playing=true, last=null;
+const scrub=$('#scrub'), tlabel=$('#tlabel'), pp=$('#pp');
+function loop(now){
+  if(last==null) last=now;
+  const dt=(now-last)/1000; last=now;
+  if(playing){ t+=dt; if(t>=DURATION) t=DURATION; }
+  render(t);
+  scrub.value=(t/DURATION)*1000;
+  tlabel.textContent=`${t.toFixed(2)} / ${DURATION.toFixed(2)}`;
+  if(playing && t>=DURATION){ /* hold final frame */ }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+pp.onclick=()=>{ playing=!playing; pp.textContent=playing?'❚❚':'►'; if(playing)last=null; };
+scrub.oninput=()=>{ playing=false; pp.textContent='►'; t=(scrub.value/1000)*DURATION; render(t); };
+$('#cc').onclick=()=>document.body.classList.toggle('cc');
+addEventListener('keydown',e=>{ if(e.code==='Space'){e.preventDefault();pp.onclick();}
+  if(e.code==='ArrowRight'){playing=false;t=Math.min(DURATION,t+1/30);render(t);}
+  if(e.code==='ArrowLeft'){playing=false;t=Math.max(0,t-1/30);render(t);} });
+
+/* ─── deterministic seek API for headless frame capture ─── */
+window.__duration = ()=>DURATION;
+window.__seek = sec => { playing=false; t=Math.max(0,Math.min(DURATION,sec)); render(t); };
+window.__ready = true;
+render(0);
+</script>
