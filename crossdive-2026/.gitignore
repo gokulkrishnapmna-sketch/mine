@@ -1,0 +1,11 @@
+# Rendered MP4 deliverables — large and fully reproducible from source via ./render_all.sh
+out/
+
+# local render/build scratch
+node_modules
+scratch_frames/
+render.log
+.ffmpeg_path
+verify.mjs
+verify2.mjs
+dbg*.mjs
