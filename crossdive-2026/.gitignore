@@ -1,5 +1,5 @@
-# silent feed version is a byte-identical copy of the master (film has no audio) — regenerate via render_all.sh
-out/crossdive-2026_silent.mp4
+# Rendered MP4 deliverables — large and fully reproducible from source via ./render_all.sh
+out/
 
 # local render/build scratch
 node_modules
